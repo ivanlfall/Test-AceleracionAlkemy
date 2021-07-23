@@ -27,44 +27,73 @@ namespace TestAceleracionAlkemy.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PersonajeOut>>> GetPersonaje()
+        public async Task<ActionResult<PersonajeOut>> GetPersonaje()
         {
             var data = await _context.Personaje.ToListAsync();
             List<PersonajeOut> personajes = new List<PersonajeOut>();
             data.ForEach(item =>
-            personajes.Add(_mapper.Map<PersonajeOut>(item))); 
+            personajes.Add(_mapper.Map<PersonajeOut>(item)));
 
-            return personajes;
+            return Ok(personajes);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonajeDetail>> GetPersonaje(int id)
         {
             var personajes = await _context.Personaje.Include(x => x.Pelicula).ToListAsync();
 
-            var personaje = from p in personajes
-                            where p.Id == id
-                            select p;
-            var pelicula = personaje.First().Pelicula.Titulo;
-
-            PersonajeDetail personajeDetail = new PersonajeDetail()
-            {
-                Id = personaje.First().Id,
-                Imagen = personaje.First().Imagen,
-                Nombre = personaje.First().Nombre,
-                Edad= personaje.First().Edad,
-                Peso= personaje.First().Peso,
-                Historia= personaje.First().Historia,
-                Pelicula = pelicula
-            };
-
+            var personaje = personajes.ToList().Find(x => x.Id == id);
 
             if (personaje == null)
             {
                 return NotFound();
             }
 
+
+            var pelicula = personaje.Pelicula.Titulo;
+
+            PersonajeDetail personajeDetail = new PersonajeDetail()
+            {
+                Id = personaje.Id,
+                Imagen = personaje.Imagen,
+                Nombre = personaje.Nombre,
+                Edad = personaje.Edad,
+                Peso = personaje.Peso,
+                Historia = personaje.Historia,
+                Pelicula = pelicula
+            };
+
+
             return personajeDetail;
+        }
+
+        
+       [HttpGet("Buscar")]
+       public async Task<ActionResult> GetBy([FromQuery]PersonajeBusqueda filtros)
+        {
+            var data = await _context.Personaje.ToListAsync();
+
+            if (filtros == null)
+            {
+                return Ok(data);
+            }
+
+
+            if (!string.IsNullOrEmpty(filtros.Nombre))
+            {
+                data = data.Where(x => x.Nombre.Contains(filtros.Nombre)).ToList();
+            }
+            if (filtros.Edad > 0 )
+            {
+                data = data.Where(x => x.Edad == filtros.Edad).ToList();
+            }
+            if (filtros.PeliculaId > 0)
+            {
+                data = data.Where(x => x.PeliculaID == filtros.PeliculaId).ToList();
+            }
+
+            return Ok(data);
         }
 
 

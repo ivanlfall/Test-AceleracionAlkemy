@@ -4,21 +4,18 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TestAceleracionAlkemy.Models
+namespace TestAceleracionAlkemy.Dto.In
 {
-    public class Pelicula
+    public class PeliculaIn
     {
-
-        public int Id { get; set; }
+        [Required(ErrorMessage = "La Imagen es requerida")]
         public string Imagen { get; set; }
+        [Required(ErrorMessage = "El Titulo es requerido")]
         public string Titulo { get; set; }
         [DataType(DataType.Date)]
         public DateTime FechaCreacion { get; set; }
+        [Range(1, 5, ErrorMessage = "Valor Fuera de rango")]
         public int Calificacion { get; set; }
-
-        public int GeneroID { get; set; }
-
-        public virtual Genero Genero { get; set; }
-        public ICollection<Personaje> Personajes { get; set; }
+        public int GeneroId { get; set; }
     }
 }
